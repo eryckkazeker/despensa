@@ -1,0 +1,67 @@
+Aplicativo despensa. Controle de despensa
+*****************************************************************************************************************************************************************************************
+Menu Principal
+Opções:
+Entrada
+Abertura
+Saida
+Calendario
+Lista de Compras
+*****************************************************************************************************************************************************************************************
+Tela 1
+Scan
+Tela para escanear o código de barras do produto ou digitar um código qualquer
+Será possível fazer uma busca por nome, para produtos mais simples (ex, salada)
+[Get Products by Name]
+Ao escanear um código, o aplicativo busca no banco de dados local
+[Get Product by Barcode]
+Caso não encontre localmente pode buscar em alguma base externa (integrar com alguma api externa talvez)
+Caso não seja possível, usuário pode cadastrar o nome manualmente.
+Após encontrar o produto, aparecem os campos para inserção de dados
+Campos para cadastro:
+
+Se não cadastrado:
+Descrição do Produto
+Validade após aberto "Após aberto, consumir em [x] dias"
+Quantidade mínima
+
+Sempre:
+Quantidade
+Data de validade
+Preço
+
+Para cada quantidade:
+[Save Product]
+
+[Save Closed Product]
+[Save Price]
+*****************************************************************************************************************************************************************************************
+Tela 2
+Abrir produto
+Tela onde o usuário indicará que um produto está sendo aberto para consumo
+O código será escaneado e a partir desse momento, 1 produto é retirado do status fechado para o status aberto
+Caso exista mais de 1 produto com o mesmo código, mas com data de validade diferente, um diálogo é mostrado para que o usuário indique qual a data de validade do produto selecionado
+A partir do momento que um produto é aberto, passa a ser contada a data de validade após aberto, e um lembrete será gerado para aquela data.
+[Remove Closed Product]
+[Save Open Product]
+*****************************************************************************************************************************************************************************************
+Tela 3
+Descartar produto
+Tela onde o usuário indicará que o produto está sendo descartado
+O usuário indicará se o produto em questão está aberto ou fechado
+O usuário escaneará o produto e confirmará seu descarte.
+Após o descarte, todos os lembretes referentes ao produto serão removidos
+[Remove Closed Product]
+*****************************************************************************************************************************************************************************************
+Tela 4
+Próximos vencimentos
+Tela conterá um calendário, indicando as datas de vencimento dos produtos abertos ou fechados
+os produtos abertos serão indicados em vermelho, enquanto os fechados serão indicados em azul
+[Get Product by expiration Date]
+*****************************************************************************************************************************************************************************************
+Tela 5 
+Lista de Compras
+Tela mostra todos os produtos que estão abaixo da quantidade minima cadastrada
+*****************************************************************************************************************************************************************************************
+Tela 6
+Alteração de Cadastros
