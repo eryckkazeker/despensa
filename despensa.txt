@@ -16,8 +16,9 @@ Será possível fazer uma busca por nome, para produtos mais simples (ex, salada
 Ao escanear um código, o aplicativo busca no banco de dados local
 [Get Product by Barcode]
 Caso não encontre localmente pode buscar em alguma base externa (integrar com alguma api externa talvez)
-Caso não seja possível, usuário pode cadastrar o nome manualmente.
+Caso não seja possível buscar, ou produto não possua código de barras, usuário pode cadastrar o nome manualmente.
 Após encontrar o produto, aparecem os campos para inserção de dados
+
 Campos para cadastro:
 
 Se não cadastrado:
