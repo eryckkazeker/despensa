@@ -1,4 +1,5 @@
-import 'package:despensa/scanner.dart';
+import 'package:despensa/models/scan_mode.dart';
+import 'package:despensa/screens/scanner_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -63,7 +64,7 @@ class MainMenu extends StatelessWidget {
                     children: <Widget>[
                       RaisedButton(
                         onPressed: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => Scanner()));
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => Scanner(ScanMode.openProduct)));
                         },
                         child: Text('Inserir Produtos'),
                       ),
