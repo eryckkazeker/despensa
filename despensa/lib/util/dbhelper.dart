@@ -9,6 +9,7 @@ class DbHelper {
   String tblEAN = "ean";
   String colBarcode = "barcode";
   String colDescription = "description";
+  String colExpirationDays = "expiration_days";
 
   DbHelper._internal();
 
@@ -29,14 +30,26 @@ class DbHelper {
   Future<Database> initializeDb() async {
     Directory dir = await getApplicationDocumentsDirectory();
     String path = dir.path + "despensa.db";
-    var dbTodos = await openDatabase(path, version: 1, onCreate: _createDb);
+    var dbTodos = await openDatabase(path,
+      version: 2,
+      onCreate: _createDb,
+      onUpgrade: _onUpgrade
+    );
     return dbTodos;
   }
 
   void _createDb(Database db, int newVersion) async {
     await db.execute(
-      "CREATE TABLE $tblEAN($colBarcode TEXT PRIMARY KEY, $colDescription TEXT)"
+      "CREATE TABLE $tblEAN($colBarcode TEXT PRIMARY KEY, $colDescription TEXT, $colExpirationDays INTEGER)"
     );
+  }
+
+  void _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    switch(oldVersion) {
+      case 1:
+        await db.execute("ALTER TABLE $tblEAN add $colExpirationDays INTEGER;");
+    }
+
   }
 
   Future<int> insertEanProduct(EanProduct eanProduct) async {
@@ -49,7 +62,7 @@ class DbHelper {
     Database db = await this.db;
     EanProduct product;
 
-    List<String> columnsToSelect = [colBarcode, colDescription];
+    List<String> columnsToSelect = [colBarcode, colDescription, colExpirationDays];
     String whereString = "$colBarcode = ?";
     List<dynamic> args = [barcode];
 

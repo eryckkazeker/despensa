@@ -98,7 +98,7 @@ class ScannerState extends State<Scanner> {
   void _insertProductData() {
     Navigator.pop(context);
     Navigator.pop(context);
-    Navigator.push(context, MaterialPageRoute(builder: (context) => EanProductScreen(EanProduct("", ""))));
+    Navigator.push(context, MaterialPageRoute(builder: (context) => EanProductScreen(EanProduct(this._scannedCode, "", 0))));
   }
 
   void productNotFoundDialog(BuildContext context) {
@@ -116,7 +116,7 @@ class ScannerState extends State<Scanner> {
     );
     //configura o AlertDialog
     AlertDialog alert = AlertDialog(
-      title: Text("Prouto nao encontrado"),
+      title: Text("Produto não encontrado"),
       content: Text("Selecione uma opção"),
       actions: [
         searchProductButton,
