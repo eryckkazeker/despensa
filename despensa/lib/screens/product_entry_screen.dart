@@ -1,32 +1,26 @@
 import 'package:despensa/models/ean_product.dart';
-import 'package:despensa/util/dbhelper.dart';
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
 
-class EanProductScreen extends StatefulWidget {
+class ProductEntryScreen extends StatefulWidget {
 
   final EanProduct eanProduct;
 
-  EanProductScreen(this.eanProduct);
+  ProductEntryScreen(this.eanProduct);
 
   @override
-  EanProductScreenState createState() => EanProductScreenState(this.eanProduct);
+  ProductEntryScreenState createState() => ProductEntryScreenState(this.eanProduct);
 }
 
-class EanProductScreenState extends State<EanProductScreen> {
-
-  EanProductScreenState(this._eanProduct);
+class ProductEntryScreenState extends State<ProductEntryScreen> {
 
   EanProduct _eanProduct;
-  int _days = 1;
+  int _quantity = 1;
 
-  DbHelper _dbHelper = DbHelper();
-
-  final descriptionController = TextEditingController();
+  ProductEntryScreenState(this._eanProduct);
 
   @override
   Widget build(BuildContext context) {
-    descriptionController.text = _eanProduct.description;
     return Scaffold(
       appBar: AppBar(
         title: Text('Despensa'),
@@ -39,7 +33,7 @@ class EanProductScreenState extends State<EanProductScreen> {
             child: Align(
               alignment: Alignment.center,
               child: Text(
-                'Novo Produto',
+                _eanProduct.description,
                 style: TextStyle(
                   fontSize: 30.0,
                   fontWeight: FontWeight.bold
@@ -71,34 +65,19 @@ class EanProductScreenState extends State<EanProductScreen> {
                     )
                   ),
                   Padding(
-                    padding: EdgeInsets.only(top: 20.0),
-                    child: TextField(
-                      controller: descriptionController,
-                      onChanged: ((value) => _eanProduct.description = descriptionController.text),
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(5.0))
-                        ),
-                        hintText: 'Descrição do Produto'
-                      ),
-                    )
-                  ),
-                  Padding(
                     padding: EdgeInsets.only(top:20.0),
-                    child: Text('Após aberto, consumir em')
+                    child: Text('Quantidade:')
                   ),
                   NumberPicker.integer(
-                    initialValue: _days,
+                    initialValue: _quantity,
                     minValue: 0,
                     maxValue: 99,
                     onChanged: ((newValue) {
                       setState(() {
-                        _days = newValue;
-                        _eanProduct.expirationDays = _days;
+                        _quantity = newValue;
                       });
                     })
                   ),
-                  Text('dias')
                 ]
               )
             )
@@ -111,7 +90,7 @@ class EanProductScreenState extends State<EanProductScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   RaisedButton(
-                    onPressed: (() => _saveProduct(_eanProduct)),
+                    onPressed: null,
                     child: Text('Salvar'),
                   ),
                   RaisedButton(
@@ -127,51 +106,7 @@ class EanProductScreenState extends State<EanProductScreen> {
     );
   }
 
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    descriptionController.dispose();
-    super.dispose();
-
-  }
-
   void _goBack() {
     Navigator.pop(context);
-  }
-
-  void _saveProduct(EanProduct eanProduct) async {
-    if(eanProduct.barcode == '' || eanProduct.description == '')
-    {
-      _showErrorDialog('Preencha todos os dados');
-      return;
-    }
-
-    await _dbHelper.initializeDb();
-    
-    int result = await _dbHelper.insertEanProduct(_eanProduct);
-
-    if(result <= 0) {
-      _showErrorDialog('Erro ao salvar produto, tente novamente.');
-    }
-
-  }
-
-  void _showErrorDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Erro'),
-          content: Text(message),
-          actions: <Widget>[
-            FlatButton(
-              onPressed: (() {
-                Navigator.pop(context);
-              }), 
-              child: Text('OK'))
-          ],
-        );
-      },
-    );
   }
 }

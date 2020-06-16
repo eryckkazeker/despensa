@@ -29,6 +29,6 @@ class EanProduct {
   EanProduct.fromObject(dynamic o) {
     this._barcode = o["barcode"] != null ? o["barcode"] : "";
     this._description = o["description"] != null ? o["description"] : "";
-    this._description = o["expiration_days"] != null ? o["expiration_days"] : 0;
+    this._expirationDays = o["expiration_days"] != null ? o["expiration_days"] : 0;
   }
 }

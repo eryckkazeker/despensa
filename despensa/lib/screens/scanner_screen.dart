@@ -1,6 +1,7 @@
 import 'package:despensa/models/ean_product.dart';
 import 'package:despensa/models/scan_mode.dart';
 import 'package:despensa/screens/ean_product_screen.dart';
+import 'package:despensa/screens/product_entry_screen.dart';
 import 'package:despensa/util/dbhelper.dart';
 import 'package:flutter/material.dart';
 import 'package:barcode_scan/barcode_scan.dart';
@@ -86,6 +87,9 @@ class ScannerState extends State<Scanner> {
     eanProduct.then((product) {
       if(product == null) {
         productNotFoundDialog(context);
+      }
+      else {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => ProductEntryScreen(product)));
       }
     });
   }
