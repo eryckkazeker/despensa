@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:despensa/models/ean_product.dart';
 import 'package:despensa/models/scan_mode.dart';
 import 'package:despensa/screens/ean_product_screen.dart';
@@ -6,6 +8,8 @@ import 'package:despensa/util/dbhelper.dart';
 import 'package:flutter/material.dart';
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
+import 'package:convert/convert.dart';
 
 class Scanner extends StatefulWidget {
   final ScanMode scanMode;
@@ -94,6 +98,26 @@ class ScannerState extends State<Scanner> {
     });
   }
 
+  void searchOnline() async {
+    var product = await getProductOnline();
+    if(product == null) {
+      _insertProductData();
+    } else {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => EanProductScreen(product)));
+    }
+  }
+
+  Future<EanProduct> getProductOnline() async {
+    final response = await http.get('https://api.cosmos.bluesoft.com.br/gtins/$_scannedCode',
+      headers:{'X-Cosmos-Token':'lSoJVyRyMPZNJ6szebz3sw'});
+    if(response.statusCode == 200) {
+      return EanProduct.fromJSON(jsonDecode(response.body));
+    }
+    else {
+      return null;
+    }
+}
+
   void _goBack() {
     Navigator.pop(context);
     Navigator.pop(context);
@@ -112,7 +136,7 @@ class ScannerState extends State<Scanner> {
     );
     Widget searchProductButton = FlatButton(
       child: Text("Buscar Online"),
-      onPressed:  () {},
+      onPressed:  searchOnline,
     );
     Widget insertProductButton = FlatButton(
       child: Text("Inserir Dados"),

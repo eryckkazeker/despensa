@@ -31,4 +31,9 @@ class EanProduct {
     this._description = o["description"] != null ? o["description"] : "";
     this._expirationDays = o["expiration_days"] != null ? o["expiration_days"] : 0;
   }
+
+  EanProduct.fromJSON(Map<String, dynamic> json) {
+    this._barcode = json['gtin'].toString();
+    this._description = json['description'];
+  }
 }

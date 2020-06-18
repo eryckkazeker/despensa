@@ -90,7 +90,7 @@ class EanProductScreenState extends State<EanProductScreen> {
                   NumberPicker.integer(
                     initialValue: _days,
                     minValue: 0,
-                    maxValue: 99,
+                    maxValue: 180,
                     onChanged: ((newValue) {
                       setState(() {
                         _days = newValue;
@@ -129,7 +129,6 @@ class EanProductScreenState extends State<EanProductScreen> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     descriptionController.dispose();
     super.dispose();
 
@@ -143,6 +142,7 @@ class EanProductScreenState extends State<EanProductScreen> {
     if(eanProduct.barcode == '' || eanProduct.description == '')
     {
       _showErrorDialog('Preencha todos os dados');
+      Navigator.pop(context);
       return;
     }
 

@@ -35,9 +35,10 @@ class ProductEntryScreenState extends State<ProductEntryScreen> {
               child: Text(
                 _eanProduct.description,
                 style: TextStyle(
-                  fontSize: 30.0,
-                  fontWeight: FontWeight.bold
-                )
+                  fontSize: 20.0,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
               )
             )
           ),
@@ -70,8 +71,8 @@ class ProductEntryScreenState extends State<ProductEntryScreen> {
                   ),
                   NumberPicker.integer(
                     initialValue: _quantity,
-                    minValue: 0,
-                    maxValue: 99,
+                    minValue: 1,
+                    maxValue: 10,
                     onChanged: ((newValue) {
                       setState(() {
                         _quantity = newValue;
@@ -107,6 +108,7 @@ class ProductEntryScreenState extends State<ProductEntryScreen> {
   }
 
   void _goBack() {
+    Navigator.pop(context);
     Navigator.pop(context);
   }
 }
