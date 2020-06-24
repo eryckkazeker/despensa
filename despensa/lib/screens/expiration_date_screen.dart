@@ -1,27 +1,28 @@
 import 'package:despensa/models/ean_product.dart';
-import 'package:despensa/screens/expiration_date_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:numberpicker/numberpicker.dart';
 
-class ProductEntryScreen extends StatefulWidget {
+class ExpirationDateScreen extends StatefulWidget {
 
-  final EanProduct eanProduct;
+  final int loopQuantity;
+  final EanProduct product;
 
-  ProductEntryScreen(this.eanProduct);
+  ExpirationDateScreen(this.product, this.loopQuantity);
 
   @override
-  ProductEntryScreenState createState() => ProductEntryScreenState(this.eanProduct);
+  ExpirationDateScreenState createState() => ExpirationDateScreenState(this.product, this.loopQuantity);
 }
 
-class ProductEntryScreenState extends State<ProductEntryScreen> {
+class ExpirationDateScreenState extends State<ExpirationDateScreen> {
+  
+  int _loopQuantity;
+  EanProduct _product;
+  DateTime _expirationDate;
 
-  EanProduct _eanProduct;
-  int _quantity = 1;
-
-  ProductEntryScreenState(this._eanProduct);
+  ExpirationDateScreenState(this._product, this._loopQuantity);
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Despensa'),
@@ -34,7 +35,7 @@ class ProductEntryScreenState extends State<ProductEntryScreen> {
             child: Align(
               alignment: Alignment.center,
               child: Text(
-                _eanProduct.description,
+                _product.description,
                 style: TextStyle(
                   fontSize: 20.0,
                   fontWeight: FontWeight.bold,
@@ -61,24 +62,29 @@ class ProductEntryScreenState extends State<ProductEntryScreen> {
                       image: AssetImage('assets/images/barcode.png'),
                     )
                   ),
-                  Text(this._eanProduct.barcode,
+                  Text(this._product.barcode,
                     style: TextStyle(
                       fontSize: 25.0
                     )
                   ),
                   Padding(
-                    padding: EdgeInsets.only(top:20.0),
-                    child: Text('Quantidade:')
+                    padding: EdgeInsets.only(top:100.0),
+                    child: Text('Data de Validade:',
+                      style: TextStyle(
+                        fontSize: 20.0
+                      ),
+                    )
                   ),
-                  NumberPicker.integer(
-                    initialValue: _quantity,
-                    minValue: 1,
-                    maxValue: 10,
-                    onChanged: ((newValue) {
-                      setState(() {
-                        _quantity = newValue;
-                      });
-                    })
+                  Padding(
+                    padding: EdgeInsets.only(top:20.0),
+                    child: FlatButton(
+                      onPressed: _showDatePicker, 
+                      child: Text(_formatDate(_expirationDate),
+                        style: TextStyle(
+                          fontSize: 20.0
+                        ),
+                      )
+                    )
                   ),
                 ]
               )
@@ -92,8 +98,8 @@ class ProductEntryScreenState extends State<ProductEntryScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   RaisedButton(
-                    onPressed: _continue,
-                    child: Text('Continuar'),
+                    onPressed: null,
+                    child: Text('Salvar'),
                   ),
                   RaisedButton(
                     onPressed: _goBack,
@@ -110,11 +116,24 @@ class ProductEntryScreenState extends State<ProductEntryScreen> {
 
   void _goBack() {
     Navigator.pop(context);
-    Navigator.pop(context);
   }
 
-  void _continue() {
-    Navigator.push(context, 
-      MaterialPageRoute(builder: (context) => ExpirationDateScreen(this._eanProduct, this._quantity)));
+  void _showDatePicker() {
+    showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now().subtract(Duration(days: 1)),
+      lastDate: DateTime.now().add(Duration(days: 730))
+    ).then((value) {
+      setState(() {
+        _expirationDate = value;
+      });
+    });
+  }
+
+  String _formatDate(DateTime date) {
+    if (date == null) return "Selecionar";
+
+    return "${date.day}/${date.month}/${date.year}";
   }
 }

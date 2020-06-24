@@ -152,7 +152,12 @@ class EanProductScreenState extends State<EanProductScreen> {
 
     if(result <= 0) {
       _showErrorDialog('Erro ao salvar produto, tente novamente.');
+      return;
     }
+
+    Navigator.pop(context);
+    Navigator.pop(context);
+    Navigator.pop(context);
 
   }
 

@@ -11,6 +11,12 @@ class DbHelper {
   String colDescription = "description";
   String colExpirationDays = "expiration_days";
 
+  String tblProduct = "products";
+  String colId = "product_id";
+  String colProductBarcode = "product_barcode";
+  String colExpiration = "expiration_date";
+  String colIsOpen = "is_open";
+
   DbHelper._internal();
 
   factory DbHelper() {
@@ -31,7 +37,7 @@ class DbHelper {
     Directory dir = await getApplicationDocumentsDirectory();
     String path = dir.path + "despensa.db";
     var dbTodos = await openDatabase(path,
-      version: 2,
+      version: 3,
       onCreate: _createDb,
       onUpgrade: _onUpgrade
     );
@@ -48,6 +54,11 @@ class DbHelper {
     switch(oldVersion) {
       case 1:
         await db.execute("ALTER TABLE $tblEAN add $colExpirationDays INTEGER;");
+        continue v2;
+      v2:
+      case 2:
+        await db.execute("CREATE TABLE $tblProduct($colId INTEGER PRIMARY KEY, "+
+          "$colProductBarcode TEXT, $colExpiration INTEGER, $colIsOpen NUMERIC)");
     }
 
   }
