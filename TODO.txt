@@ -1,0 +1,2 @@
+Refatorar dbHelper e quebrar os DAOs
+usar delete on downgrade
