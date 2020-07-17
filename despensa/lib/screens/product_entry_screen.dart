@@ -1,11 +1,11 @@
-import 'package:despensa/models/ean_product.dart';
+import 'package:despensa/models/ean_info.dart';
 import 'package:despensa/screens/expiration_date_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
 
 class ProductEntryScreen extends StatefulWidget {
 
-  final EanProduct eanProduct;
+  final EanInfo eanProduct;
 
   ProductEntryScreen(this.eanProduct);
 
@@ -15,7 +15,7 @@ class ProductEntryScreen extends StatefulWidget {
 
 class ProductEntryScreenState extends State<ProductEntryScreen> {
 
-  EanProduct _eanProduct;
+  EanInfo _eanProduct;
   int _quantity = 1;
 
   ProductEntryScreenState(this._eanProduct);
@@ -24,7 +24,7 @@ class ProductEntryScreenState extends State<ProductEntryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Despensa'),
+        title: Text('Quantidade de Produtos'),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

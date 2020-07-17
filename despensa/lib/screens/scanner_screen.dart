@@ -1,10 +1,12 @@
 import 'dart:convert';
 
-import 'package:despensa/models/ean_product.dart';
+import 'package:despensa/models/ean_info.dart';
+import 'package:despensa/models/product.dart';
 import 'package:despensa/models/scan_mode.dart';
 import 'package:despensa/screens/ean_product_screen.dart';
 import 'package:despensa/screens/product_entry_screen.dart';
 import 'package:despensa/util/dbhelper.dart';
+import 'package:despensa/util/dialog_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/services.dart';
@@ -36,14 +38,9 @@ class ScannerState extends State<Scanner> {
       barcodeScan();
     }
 
-    return Container(
-      child: Center(
-        child: Column(
-          children: <Widget>[
-            Text('Scanner'),
-            Text(_scannedCode)
-          ],
-        )
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Scanner'),
       ),
     );
   }
@@ -57,6 +54,9 @@ class ScannerState extends State<Scanner> {
       });
 
       switch(this.scanMode) {
+        case ScanMode.insertProduct:
+          insertProduct(this._scannedCode);
+        break;
         case ScanMode.openProduct:
           openProduct(this._scannedCode);
         break;
@@ -77,15 +77,38 @@ class ScannerState extends State<Scanner> {
     }
   }
 
-  Future<EanProduct> getEanProduct(String barcode) async {
-    await helper.initializeDb();
+  Future<EanInfo> getEanProduct(String barcode) async {
     
     final eanProduct = await helper.getEanProductByBarcode(barcode);
 
     return eanProduct;
   }
 
-  void openProduct(String barcode) {
+  Future<void> openProduct(String barcode) async {
+    var products = await helper.getClosedProductsByBarcode(barcode);
+
+    if(products.length > 1)
+    {
+      //TODO:Show list for user to select from
+      return;
+    }
+
+    if(products.length == 0)
+    {
+      DialogManager.showGenericDialog(context, 'Produto nao encontrado');
+      return;
+    }
+
+    var result = await helper.openProduct(products[0]);
+
+    if(result < 0)  {
+      DialogManager.showGenericDialog(context, 'Erro ao abrir produto. Tente novamente');
+      return;
+    }
+    
+  }
+
+  void insertProduct(String barcode) {
     var eanProduct = getEanProduct(barcode);
 
     eanProduct.then((product) {
@@ -107,11 +130,11 @@ class ScannerState extends State<Scanner> {
     }
   }
 
-  Future<EanProduct> getProductOnline() async {
+  Future<EanInfo> getProductOnline() async {
     final response = await http.get('https://api.cosmos.bluesoft.com.br/gtins/$_scannedCode',
       headers:{'X-Cosmos-Token':'lSoJVyRyMPZNJ6szebz3sw'});
     if(response.statusCode == 200) {
-      return EanProduct.fromJSON(jsonDecode(response.body));
+      return EanInfo.fromJSON(jsonDecode(response.body));
     }
     else {
       return null;
@@ -126,7 +149,7 @@ class ScannerState extends State<Scanner> {
   void _insertProductData() {
     Navigator.pop(context);
     Navigator.pop(context);
-    Navigator.push(context, MaterialPageRoute(builder: (context) => EanProductScreen(EanProduct(this._scannedCode, "", 0))));
+    Navigator.push(context, MaterialPageRoute(builder: (context) => EanProductScreen(EanInfo(this._scannedCode, "", 0))));
   }
 
   void productNotFoundDialog(BuildContext context) {

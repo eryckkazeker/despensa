@@ -1,9 +1,10 @@
-class EanProduct {
+class EanInfo {
+  
   String _barcode;
   String _description;
   int _expirationDays;
 
-  EanProduct(this._barcode, this._description, this._expirationDays);
+  EanInfo(this._barcode, this._description, this._expirationDays);
 
   String get barcode => this._barcode;
   String get description => this._description;
@@ -26,13 +27,13 @@ class EanProduct {
     return map;
   }
 
-  EanProduct.fromObject(dynamic o) {
+  EanInfo.fromObject(dynamic o) {
     this._barcode = o["barcode"] != null ? o["barcode"] : "";
     this._description = o["description"] != null ? o["description"] : "";
     this._expirationDays = o["expiration_days"] != null ? o["expiration_days"] : 0;
   }
 
-  EanProduct.fromJSON(Map<String, dynamic> json) {
+  EanInfo.fromJSON(Map<String, dynamic> json) {
     this._barcode = json['gtin'].toString();
     this._description = json['description'];
   }
