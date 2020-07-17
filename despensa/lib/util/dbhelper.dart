@@ -1,7 +1,8 @@
 import 'package:sqflite/sqflite.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
-import 'package:despensa/models/ean_product.dart';
+import 'package:despensa/models/ean_info.dart';
+import 'package:despensa/models/product.dart';
 
 class DbHelper {
   static final DbHelper _dbHelper = DbHelper._internal();
@@ -13,7 +14,7 @@ class DbHelper {
 
   String tblProduct = "products";
   String colId = "product_id";
-  String colProductBarcode = "product_barcode";
+  String colProductBarcode = "barcode";
   String colExpiration = "expiration_date";
   String colIsOpen = "is_open";
 
@@ -45,9 +46,8 @@ class DbHelper {
   }
 
   void _createDb(Database db, int newVersion) async {
-    await db.execute(
-      "CREATE TABLE $tblEAN($colBarcode TEXT PRIMARY KEY, $colDescription TEXT, $colExpirationDays INTEGER)"
-    );
+    await db.execute("CREATE TABLE $tblEAN($colBarcode TEXT PRIMARY KEY, $colDescription TEXT, $colExpirationDays INTEGER)");
+    await db.execute("CREATE TABLE $tblProduct($colId INTEGER PRIMARY KEY, $colProductBarcode TEXT, $colExpiration INTEGER, $colIsOpen NUMERIC)");
   }
 
   void _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -57,21 +57,21 @@ class DbHelper {
         continue v2;
       v2:
       case 2:
-        await db.execute("CREATE TABLE $tblProduct($colId INTEGER PRIMARY KEY, "+
-          "$colProductBarcode TEXT, $colExpiration INTEGER, $colIsOpen NUMERIC)");
+        await db.execute('''CREATE TABLE $tblProduct($colId INTEGER PRIMARY KEY, 
+          "$colProductBarcode TEXT, $colExpiration INTEGER, $colIsOpen NUMERIC)''');
     }
 
   }
 
-  Future<int> insertEanProduct(EanProduct eanProduct) async {
+  Future<int> insertEanProduct(EanInfo eanProduct) async {
     Database db = await this.db;
     var result = await db.insert(tblEAN, eanProduct.toMap());
     return result;
   }
 
-  Future<EanProduct> getEanProductByBarcode(String barcode) async {
+  Future<EanInfo> getEanProductByBarcode(String barcode) async {
     Database db = await this.db;
-    EanProduct product;
+    EanInfo product;
 
     List<String> columnsToSelect = [colBarcode, colDescription, colExpirationDays];
     String whereString = "$colBarcode = ?";
@@ -83,8 +83,71 @@ class DbHelper {
       where: whereString,
       whereArgs: args);
     
-    result.forEach((row) => product = EanProduct.fromObject(row));
+    result.forEach((row) => product = EanInfo.fromObject(row));
 
     return product;
+  }
+
+  Future<int> insertProduct(Product product) async {
+    Database db = await this.db;
+    var result = await db.insert(tblProduct, product.toMap());
+    return result;
+  }
+
+  Future<int> openProduct(Product product) async {
+    Database db = await this.db;
+
+    var eanProduct = await getEanProductByBarcode(product.eanInfo.barcode);
+
+    product.expirationDate = DateTime.now().add(Duration(days: eanProduct.expirationDays));
+    
+    var result = await db.update(
+      tblProduct,
+      product.toMap(),
+      where: "$colId = ?",
+      whereArgs: [product.id]
+    );
+
+    return result;
+  }
+
+  Future<List<EanInfo>> getOpenProductsByBarcode(String barcode) async {
+    Database db = await this.db;
+    List<EanInfo> products;
+
+    List<String> columnsToSelect = [colId, colProductBarcode, colExpiration, colIsOpen];
+    String whereString = "$colProductBarcode = ? and $colIsOpen = ?";
+    List<dynamic> args = [barcode, 1];
+
+    var result = await db.query(
+      tblProduct,
+      columns: columnsToSelect,
+      where: whereString,
+      whereArgs: args
+    );
+
+    result.forEach((element) => products.add(EanInfo.fromObject(element)));
+
+    return products;
+  }
+
+  Future<List<Product>> getClosedProductsByBarcode(String barcode) async {
+    Database db = await this.db;
+    List<Product> products = List();
+
+    List<String> columnsToSelect = [colId, colProductBarcode, colExpiration, colIsOpen];
+    String whereString = "$colProductBarcode = ? and $colIsOpen = ?";
+    List<dynamic> args = [barcode, 0];
+
+    var result = await db.query(
+      tblProduct,
+      columns: columnsToSelect,
+      where: whereString,
+      whereArgs: args
+    );
+
+    result.forEach((element) => products.add(Product.fromObject(element)));
+
+    return products;
   }
 }

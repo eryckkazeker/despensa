@@ -1,10 +1,13 @@
-import 'package:despensa/models/ean_product.dart';
+import 'package:despensa/models/ean_info.dart';
+import 'package:despensa/models/product.dart';
+import 'package:despensa/util/dbhelper.dart';
+import 'package:despensa/util/dialog_manager.dart';
 import 'package:flutter/material.dart';
 
 class ExpirationDateScreen extends StatefulWidget {
 
   final int loopQuantity;
-  final EanProduct product;
+  final EanInfo product;
 
   ExpirationDateScreen(this.product, this.loopQuantity);
 
@@ -14,18 +17,22 @@ class ExpirationDateScreen extends StatefulWidget {
 
 class ExpirationDateScreenState extends State<ExpirationDateScreen> {
   
+  DbHelper helper = DbHelper();
+
   int _loopQuantity;
-  EanProduct _product;
+  EanInfo _product;
   DateTime _expirationDate;
 
   ExpirationDateScreenState(this._product, this._loopQuantity);
+
+  int _loopCount = 1;
 
   @override
   Widget build(BuildContext context) {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Despensa'),
+        title: Text('Data de Validade'),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -68,7 +75,15 @@ class ExpirationDateScreenState extends State<ExpirationDateScreen> {
                     )
                   ),
                   Padding(
-                    padding: EdgeInsets.only(top:100.0),
+                    padding: EdgeInsets.only(top:50.0),
+                    child: Text('Item $_loopCount',
+                      style: TextStyle(
+                        fontSize: 20.0
+                      ),
+                    )
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(top:50.0),
                     child: Text('Data de Validade:',
                       style: TextStyle(
                         fontSize: 20.0
@@ -79,11 +94,7 @@ class ExpirationDateScreenState extends State<ExpirationDateScreen> {
                     padding: EdgeInsets.only(top:20.0),
                     child: FlatButton(
                       onPressed: _showDatePicker, 
-                      child: Text(_formatDate(_expirationDate),
-                        style: TextStyle(
-                          fontSize: 20.0
-                        ),
-                      )
+                      child: _formatDate(this._expirationDate)
                     )
                   ),
                 ]
@@ -98,7 +109,7 @@ class ExpirationDateScreenState extends State<ExpirationDateScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   RaisedButton(
-                    onPressed: null,
+                    onPressed: _saveProduct,
                     child: Text('Salvar'),
                   ),
                   RaisedButton(
@@ -131,9 +142,44 @@ class ExpirationDateScreenState extends State<ExpirationDateScreen> {
     });
   }
 
-  String _formatDate(DateTime date) {
-    if (date == null) return "Selecionar";
+  void _saveProduct() async {
 
-    return "${date.day}/${date.month}/${date.year}";
+    Product product = Product(
+      this._product,
+      this._expirationDate,
+      false);
+
+    if (await helper.insertProduct(product) < 0)
+    {
+      DialogManager.showGenericDialog(context, 'Erro ao salvar produto, tente novamente');
+    }
+
+    setState(() {
+      this._loopQuantity--;
+      this._loopCount++;
+    });
+
+    if(this._loopQuantity == 0)
+    {
+      Navigator.pop(context);
+      Navigator.pop(context);
+      Navigator.pop(context);
+    }
+  }
+
+  Text _formatDate(DateTime date) {
+    if (date == null) {
+      return Text("Clique para Selecionar",
+        style: TextStyle(
+          fontSize: 20.0,
+          color: Colors.blue
+        ),
+      );
+    }
+    return Text("${date.day}/${date.month}/${date.year}",
+      style: TextStyle(
+        fontSize: 20.0,
+      ),
+    );
   }
 }
