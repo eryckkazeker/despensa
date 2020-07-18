@@ -1,8 +1,9 @@
-import 'package:despensa/models/ean_info.dart';
-import 'package:despensa/models/product.dart';
-import 'package:despensa/util/dbhelper.dart';
-import 'package:despensa/util/dialog_manager.dart';
+import 'package:despensa/database/product_dao.dart';
 import 'package:flutter/material.dart';
+
+import '../models/ean_info.dart';
+import '../models/product.dart';
+import '../util/dialog_manager.dart';
 
 class ExpirationDateScreen extends StatefulWidget {
 
@@ -17,7 +18,7 @@ class ExpirationDateScreen extends StatefulWidget {
 
 class ExpirationDateScreenState extends State<ExpirationDateScreen> {
   
-  DbHelper helper = DbHelper();
+  ProductDao _dao = ProductDao();
 
   int _loopQuantity;
   EanInfo _product;
@@ -144,12 +145,17 @@ class ExpirationDateScreenState extends State<ExpirationDateScreen> {
 
   void _saveProduct() async {
 
+    if(_expirationDate == null) {
+      DialogManager.showGenericDialog(context, "Selecione a data de validade");
+      return;
+    }
+
     Product product = Product(
       this._product,
       this._expirationDate,
       false);
 
-    if (await helper.insertProduct(product) < 0)
+    if (await _dao.insertProduct(product) < 0)
     {
       DialogManager.showGenericDialog(context, 'Erro ao salvar produto, tente novamente');
     }

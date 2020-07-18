@@ -1,17 +1,19 @@
 import 'dart:convert';
 
-import 'package:despensa/models/ean_info.dart';
-import 'package:despensa/models/product.dart';
-import 'package:despensa/models/scan_mode.dart';
-import 'package:despensa/screens/ean_product_screen.dart';
-import 'package:despensa/screens/product_entry_screen.dart';
-import 'package:despensa/util/dbhelper.dart';
-import 'package:despensa/util/dialog_manager.dart';
+
+import 'package:despensa/database/dbhelper.dart';
+import 'package:despensa/database/ean_info_dao.dart';
+import 'package:despensa/database/product_dao.dart';
 import 'package:flutter/material.dart';
-import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/services.dart';
+import 'package:barcode_scan/barcode_scan.dart';
 import 'package:http/http.dart' as http;
-import 'package:convert/convert.dart';
+
+import '../models/ean_info.dart';
+import '../models/scan_mode.dart';
+import '../screens/ean_product_screen.dart';
+import '../screens/product_entry_screen.dart';
+import '../util/dialog_manager.dart';
 
 class Scanner extends StatefulWidget {
   final ScanMode scanMode;
@@ -25,7 +27,8 @@ class Scanner extends StatefulWidget {
 class ScannerState extends State<Scanner> {
 
   ScanMode scanMode;
-  DbHelper helper = DbHelper();
+  EanInfoDao _eanInfoDao = EanInfoDao();
+  ProductDao _productDao = ProductDao();
 
   var _scannedCode = '';
   bool _scanned = false;
@@ -77,15 +80,8 @@ class ScannerState extends State<Scanner> {
     }
   }
 
-  Future<EanInfo> getEanProduct(String barcode) async {
-    
-    final eanProduct = await helper.getEanProductByBarcode(barcode);
-
-    return eanProduct;
-  }
-
   Future<void> openProduct(String barcode) async {
-    var products = await helper.getClosedProductsByBarcode(barcode);
+    var products = await _productDao.getClosedProductsByBarcode(barcode);
 
     if(products.length > 1)
     {
@@ -99,7 +95,7 @@ class ScannerState extends State<Scanner> {
       return;
     }
 
-    var result = await helper.openProduct(products[0]);
+    var result = await _productDao.openProduct(products[0]);
 
     if(result < 0)  {
       DialogManager.showGenericDialog(context, 'Erro ao abrir produto. Tente novamente');
@@ -108,17 +104,15 @@ class ScannerState extends State<Scanner> {
     
   }
 
-  void insertProduct(String barcode) {
-    var eanProduct = getEanProduct(barcode);
+  void insertProduct(String barcode) async {
+    var info = await _eanInfoDao.getEanInfoByBarcode(barcode);
 
-    eanProduct.then((product) {
-      if(product == null) {
+    if(info == null) {
         productNotFoundDialog(context);
       }
       else {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => ProductEntryScreen(product)));
+        Navigator.push(context, MaterialPageRoute(builder: (context) => ProductEntryScreen(info)));
       }
-    });
   }
 
   void searchOnline() async {

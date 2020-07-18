@@ -1,10 +1,10 @@
-import 'package:despensa/models/ean_info.dart';
-import 'package:despensa/util/dbhelper.dart';
-import 'package:despensa/util/dialog_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
 
 import './product_entry_screen.dart';
+import '../models/ean_info.dart';
+import '../database/ean_info_dao.dart';
+import '../util/dialog_manager.dart';
 
 class EanProductScreen extends StatefulWidget {
   final EanInfo eanProduct;
@@ -16,18 +16,18 @@ class EanProductScreen extends StatefulWidget {
 }
 
 class EanProductScreenState extends State<EanProductScreen> {
-  EanProductScreenState(this._eanProduct);
+  EanProductScreenState(this._eanInfo);
 
-  EanInfo _eanProduct;
+  EanInfo _eanInfo;
   int _days = 1;
 
-  DbHelper _dbHelper = DbHelper();
+  EanInfoDao _dao = EanInfoDao();
 
   final descriptionController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    descriptionController.text = _eanProduct.description;
+    descriptionController.text = _eanInfo.description;
     return Scaffold(
         appBar: AppBar(
           title: Text('Inserir Dados do Produto'),
@@ -52,13 +52,13 @@ class EanProductScreenState extends State<EanProductScreen> {
                         child: Image(
                           image: AssetImage('assets/images/barcode.png'),
                         )),
-                    Text(this._eanProduct.barcode,
+                    Text(this._eanInfo.barcode,
                         style: TextStyle(fontSize: 25.0)),
                     Padding(
                         padding: EdgeInsets.only(top: 20.0),
                         child: TextField(
                           controller: descriptionController,
-                          onChanged: ((value) => _eanProduct.description =
+                          onChanged: ((value) => _eanInfo.description =
                               descriptionController.text),
                           decoration: InputDecoration(
                               border: OutlineInputBorder(
@@ -76,7 +76,7 @@ class EanProductScreenState extends State<EanProductScreen> {
                         onChanged: ((newValue) {
                           setState(() {
                             _days = newValue;
-                            _eanProduct.expirationDays = _days;
+                            _eanInfo.expirationDays = _days;
                           });
                         })),
                     Text('dias')
@@ -87,7 +87,7 @@ class EanProductScreenState extends State<EanProductScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
                       RaisedButton(
-                        onPressed: (() => _saveProduct(_eanProduct)),
+                        onPressed: (() => _saveProduct(_eanInfo)),
                         child: Text('Salvar'),
                       ),
                       RaisedButton(
@@ -122,9 +122,7 @@ class EanProductScreenState extends State<EanProductScreen> {
       return;
     }
 
-    await _dbHelper.initializeDb();
-
-    int result = await _dbHelper.insertEanProduct(_eanProduct);
+    int result = await _dao.insertEanInfo(_eanInfo);
 
     if (result <= 0) {
       _showErrorDialog('Erro ao salvar produto, tente novamente.');
@@ -133,7 +131,7 @@ class EanProductScreenState extends State<EanProductScreen> {
 
     Navigator.pop(context);
     Navigator.pop(context);
-    Navigator.push(context, MaterialPageRoute(builder: (context) => ProductEntryScreen(_eanProduct)));
+    Navigator.push(context, MaterialPageRoute(builder: (context) => ProductEntryScreen(_eanInfo)));
     
   }
 
