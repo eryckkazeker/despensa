@@ -1,6 +1,7 @@
 import 'package:despensa/database/product_dao.dart';
 import 'package:flutter/material.dart';
 
+import '../util/formatter.dart';
 import '../models/ean_info.dart';
 import '../models/product.dart';
 import '../util/dialog_manager.dart';
@@ -146,7 +147,7 @@ class ExpirationDateScreenState extends State<ExpirationDateScreen> {
   void _saveProduct() async {
 
     if(_expirationDate == null) {
-      DialogManager.showGenericDialog(context, "Selecione a data de validade");
+      DialogManager.showGenericDialog(context,'Atenção', 'Selecione a data de validade');
       return;
     }
 
@@ -157,7 +158,7 @@ class ExpirationDateScreenState extends State<ExpirationDateScreen> {
 
     if (await _dao.insertProduct(product) < 0)
     {
-      DialogManager.showGenericDialog(context, 'Erro ao salvar produto, tente novamente');
+      DialogManager.showGenericDialog(context, 'Erro', 'Erro ao salvar produto, tente novamente');
     }
 
     setState(() {
@@ -167,7 +168,6 @@ class ExpirationDateScreenState extends State<ExpirationDateScreen> {
 
     if(this._loopQuantity == 0)
     {
-      Navigator.pop(context);
       Navigator.pop(context);
       Navigator.pop(context);
     }
@@ -182,7 +182,7 @@ class ExpirationDateScreenState extends State<ExpirationDateScreen> {
         ),
       );
     }
-    return Text("${date.day}/${date.month}/${date.year}",
+    return Text(formatDateTime(date),
       style: TextStyle(
         fontSize: 20.0,
       ),

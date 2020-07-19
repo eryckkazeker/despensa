@@ -1,2 +1,2 @@
-Refatorar dbHelper e quebrar os DAOs
-usar delete on downgrade
+Selecionar produto numa lista de todos os produtos para abrir.
+Ter mais feedback para o usuario

@@ -6,13 +6,9 @@ import '../components/menu_button.dart';
 
 class MainMenu extends StatelessWidget {
 
-  BuildContext _context;
-
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    this._context = context;
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Despensa')
@@ -50,17 +46,17 @@ class MainMenu extends StatelessWidget {
                     children: <Widget>[
                       MenuButton(
                         'Inserir Produtos',
-                        _insertProducts,
+                        () =>_insertProducts(context),
                         textColor: Colors.white
                       ),
                       MenuButton(
                         'Abrir Produtos',
-                        _openProduct,
+                        () => _openProduct(context),
                         textColor: Colors.white
                       ),
                       MenuButton(
                         'Descartar Produtos',
-                        null,
+                        () => _discardProduct(context),
                         textColor: Colors.white
                       ),
                       MenuButton(
@@ -90,11 +86,15 @@ class MainMenu extends StatelessWidget {
     );
   }
 
-  void _openProduct() {
-    Navigator.push(this._context, MaterialPageRoute(builder: (context) => Scanner(ScanMode.openProduct)));
+  void _insertProducts(context) {
+    Navigator.push(context, MaterialPageRoute(builder: (context) => Scanner(ScanMode.insertProduct)));
   }
 
-  void _insertProducts() {
-    Navigator.push(this._context, MaterialPageRoute(builder: (context) => Scanner(ScanMode.insertProduct)));
+  void _openProduct(context) {
+    Navigator.push(context, MaterialPageRoute(builder: (context) => Scanner(ScanMode.openProduct)));
+  }
+
+  void _discardProduct(context) {
+    Navigator.push(context, MaterialPageRoute(builder: (context) => Scanner(ScanMode.discardProduct)));
   }
 }

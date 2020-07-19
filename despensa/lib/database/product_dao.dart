@@ -16,7 +16,7 @@ class ProductDao {
   static const String colIsOpen = "is_open";
 
   DbHelper helper = DbHelper();
-  EanInfoDao infoDao = EanInfoDao();
+  EanInfoDao _infoDao = EanInfoDao();
 
   Future<int> insertProduct(Product product) async {
     Database db = await helper.initializeDb();
@@ -27,9 +27,10 @@ class ProductDao {
   Future<int> openProduct(Product product) async {
     Database db = await helper.initializeDb();
 
-    var eanProduct = await infoDao.getEanInfoByBarcode(product.eanInfo.barcode);
+    var eanProduct = await _infoDao.getEanInfoByBarcode(product.eanInfo.barcode);
 
     product.expirationDate = DateTime.now().add(Duration(days: eanProduct.expirationDays));
+    product.isOpen = true;
     
     var result = await db.update(
       tblProduct,
@@ -76,7 +77,12 @@ class ProductDao {
       whereArgs: args
     );
 
-    result.forEach((element) => products.add(Product.fromObject(element)));
+    for(var element in result) {
+      var product = Product.fromObject(element);
+      var info = await _infoDao.getEanInfoByBarcode(element["barcode"]);
+      product.eanInfo = info;
+      products.add(product);
+    }
 
     return products;
   }

@@ -130,12 +130,11 @@ class EanProductScreenState extends State<EanProductScreen> {
     }
 
     Navigator.pop(context);
-    Navigator.pop(context);
     Navigator.push(context, MaterialPageRoute(builder: (context) => ProductEntryScreen(_eanInfo)));
     
   }
 
   void _showErrorDialog(String message) {
-    DialogManager.showGenericDialog(context, message);
+    DialogManager.showGenericDialog(context,'Erro', message);
   }
 }

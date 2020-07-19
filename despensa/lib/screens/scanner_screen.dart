@@ -1,9 +1,8 @@
 import 'dart:convert';
 
-
-import 'package:despensa/database/dbhelper.dart';
 import 'package:despensa/database/ean_info_dao.dart';
 import 'package:despensa/database/product_dao.dart';
+import 'package:despensa/screens/product_list_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:barcode_scan/barcode_scan.dart';
@@ -14,6 +13,7 @@ import '../models/scan_mode.dart';
 import '../screens/ean_product_screen.dart';
 import '../screens/product_entry_screen.dart';
 import '../util/dialog_manager.dart';
+import '../util/formatter.dart';
 
 class Scanner extends StatefulWidget {
   final ScanMode scanMode;
@@ -63,6 +63,9 @@ class ScannerState extends State<Scanner> {
         case ScanMode.openProduct:
           openProduct(this._scannedCode);
         break;
+        case ScanMode.discardProduct:
+          discardProduct(this._scannedCode);
+          break;
         default:
       }
 
@@ -81,27 +84,38 @@ class ScannerState extends State<Scanner> {
   }
 
   Future<void> openProduct(String barcode) async {
+    var result = -1;
     var products = await _productDao.getClosedProductsByBarcode(barcode);
+    
+    if(products.length == 0)
+    {
+      await DialogManager.showGenericDialog(context,'Atenção', 'Produto não cadastrado');
+      Navigator.pop(context);
+      return;
+    }
+
+    var selectedProduct = products[0];
 
     if(products.length > 1)
     {
-      //TODO:Show list for user to select from
-      return;
+      selectedProduct  = await Navigator.push(context, MaterialPageRoute(builder: (context) => ProductsListScreen(products)));
+      if(selectedProduct == null) {
+        Navigator.pop(context);
+        return;
+      }
     }
 
-    if(products.length == 0)
-    {
-      DialogManager.showGenericDialog(context, 'Produto nao encontrado');
-      return;
-    }
-
-    var result = await _productDao.openProduct(products[0]);
+    result = await _productDao.openProduct(selectedProduct);
 
     if(result < 0)  {
-      DialogManager.showGenericDialog(context, 'Erro ao abrir produto. Tente novamente');
+      DialogManager.showGenericDialog(context, 'Erro', 'Erro ao abrir produto. Tente novamente');
       return;
     }
-    
+
+    await DialogManager.showGenericDialog(context, 'Sucesso', '''Produto aberto ${selectedProduct.eanInfo.description}
+    \nValidade ${formatDateTime(selectedProduct.expirationDate)}''');
+
+    Navigator.pop(context);
   }
 
   void insertProduct(String barcode) async {
@@ -111,8 +125,16 @@ class ScannerState extends State<Scanner> {
         productNotFoundDialog(context);
       }
       else {
+        Navigator.pop(context);
         Navigator.push(context, MaterialPageRoute(builder: (context) => ProductEntryScreen(info)));
       }
+  }
+
+  void discardProduct(String barcode) async {
+    var product = await _productDao.getOpenProductsByBarcode(barcode);
+
+    // For now, we'll discard the first item found
+    
   }
 
   void searchOnline() async {
@@ -125,15 +147,21 @@ class ScannerState extends State<Scanner> {
   }
 
   Future<EanInfo> getProductOnline() async {
-    final response = await http.get('https://api.cosmos.bluesoft.com.br/gtins/$_scannedCode',
-      headers:{'X-Cosmos-Token':'lSoJVyRyMPZNJ6szebz3sw'});
-    if(response.statusCode == 200) {
-      return EanInfo.fromJSON(jsonDecode(response.body));
-    }
-    else {
+    try {
+      final response = await http.get('https://api.cosmos.bluesoft.com.br/gtins/$_scannedCode',
+      headers:{'X-Cosmos-Token':'VXz2Sj1q8VgkOaxEFksc_w'});
+      if(response.statusCode == 200) {
+        return EanInfo.fromJSON(jsonDecode(response.body));
+      }
+      else {
+        return null;
+      }
+    } catch (e) {
+      await DialogManager.showGenericDialog(context, 'Erro', '''Erro ao buscar dados online.
+      \nInsira os dados manualmente''');
       return null;
     }
-}
+  }
 
   void _goBack() {
     Navigator.pop(context);

@@ -3,8 +3,6 @@ import 'package:despensa/database/product_dao.dart';
 import 'package:sqflite/sqflite.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
-import 'package:despensa/models/ean_info.dart';
-import 'package:despensa/models/product.dart';
 
 class DbHelper {
   static final DbHelper _dbHelper = DbHelper._internal();
@@ -29,7 +27,7 @@ class DbHelper {
     Directory dir = await getApplicationDocumentsDirectory();
     String path = dir.path + "despensa.db";
     var dbTodos = await openDatabase(path,
-      version: 3,
+      version: 1,
       onCreate: _createDb,
       onUpgrade: _onUpgrade,
       onDowngrade: onDatabaseDowngradeDelete

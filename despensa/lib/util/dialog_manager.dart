@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
 class DialogManager {
-  static void showGenericDialog(BuildContext context, String message) {
-    showDialog(
+  static Future<void> showGenericDialog(BuildContext context, String title, String message) {
+    return showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Erro'),
+          title: Text(title),
           content: Text(message),
           actions: <Widget>[
             FlatButton(
