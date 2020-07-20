@@ -45,6 +45,11 @@ class ScannerState extends State<Scanner> {
       appBar: AppBar(
         title: Text('Scanner'),
       ),
+      body: Builder(
+        builder: (BuildContext context) {
+          return Center();
+        },
+      ),
     );
   }
 
@@ -113,7 +118,7 @@ class ScannerState extends State<Scanner> {
     }
 
     await DialogManager.showGenericDialog(context, 'Sucesso', '''Produto aberto ${selectedProduct.eanInfo.description}
-    \nValidade ${formatDateTime(selectedProduct.expirationDate)}''');
+    \nConsumir até ${formatDateTime(selectedProduct.expirationDate)}''');
 
     Navigator.pop(context);
   }
@@ -131,11 +136,27 @@ class ScannerState extends State<Scanner> {
   }
 
   void discardProduct(String barcode) async {
-    var product = await _productDao.getOpenProductsByBarcode(barcode);
+    var productList = await _productDao.getOpenProductsByBarcode(barcode);
+
+    if(productList == null || productList.length == 0) {
+      await DialogManager.showGenericDialog(context, 'Erro', 'Esse produto não está aberto ou não foi cadastrado');
+      Navigator.pop(context);
+      return;
+    }
 
     // For now, we'll discard the first item found
-    
+    var result = await _productDao.deleteProduct(productList[0]);
+
+    if(result < 0) {
+      DialogManager.showGenericDialog(context, 'Erro', 'Erro ao descartar produto');
+      Navigator.pop(context);
+      return;
+    }
+
+    await DialogManager.showGenericDialog(context, 'Sucesso', 'Produto descartado!');
+    Navigator.pop(context);
   }
+
 
   void searchOnline() async {
     var product = await getProductOnline();

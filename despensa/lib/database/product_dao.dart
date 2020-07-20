@@ -42,9 +42,9 @@ class ProductDao {
     return result;
   }
 
-  Future<List<EanInfo>> getOpenProductsByBarcode(String barcode) async {
+  Future<List<Product>> getOpenProductsByBarcode(String barcode) async {
     Database db = await helper.initializeDb();
-    List<EanInfo> products;
+    List<Product> products = List();
 
     List<String> columnsToSelect = [colId, colProductBarcode, colExpiration, colIsOpen];
     String whereString = "$colProductBarcode = ? and $colIsOpen = ?";
@@ -57,7 +57,9 @@ class ProductDao {
       whereArgs: args
     );
 
-    result.forEach((element) => products.add(EanInfo.fromObject(element)));
+    for(var element in result) {
+      products.add(await buildProduct(element));
+    }
 
     return products;
   }
@@ -78,12 +80,24 @@ class ProductDao {
     );
 
     for(var element in result) {
-      var product = Product.fromObject(element);
-      var info = await _infoDao.getEanInfoByBarcode(element["barcode"]);
-      product.eanInfo = info;
-      products.add(product);
+      products.add(await buildProduct(element));
     }
 
     return products;
+  }
+
+  Future<int> deleteProduct(Product product) async {
+    var db = await helper.initializeDb();
+    return db.delete(
+      tblProduct,
+      where: '$colId = ?',
+      whereArgs: [product.id]);
+  }
+
+  Future<Product> buildProduct(Map<String, dynamic> element) async{
+    var product = Product.fromObject(element);
+    var info = await _infoDao.getEanInfoByBarcode(element["barcode"]);
+    product.eanInfo = info;
+    return product;
   }
 }
