@@ -1,4 +1,5 @@
 import 'package:despensa/database/product_dao.dart';
+import 'package:despensa/util/notification_helper.dart';
 import 'package:flutter/material.dart';
 
 import '../util/formatter.dart';
@@ -160,6 +161,8 @@ class ExpirationDateScreenState extends State<ExpirationDateScreen> {
     {
       DialogManager.showGenericDialog(context, 'Erro', 'Erro ao salvar produto, tente novamente');
     }
+
+    NotificationHelper.showNotification(product, product.expirationDate);
 
     setState(() {
       this._loopQuantity--;

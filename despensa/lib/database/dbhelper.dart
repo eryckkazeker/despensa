@@ -1,4 +1,5 @@
 import 'package:despensa/database/ean_info_dao.dart';
+import 'package:despensa/database/notification_dao.dart';
 import 'package:despensa/database/product_dao.dart';
 import 'package:sqflite/sqflite.dart';
 import 'dart:io';
@@ -38,6 +39,7 @@ class DbHelper {
   void _createDb(Database db, int newVersion) async {
     await db.execute(EanInfoDao.createTable);
     await db.execute(ProductDao.createTable);
+    await db.execute(NotificationDao.createTable);
   }
 
   void _onUpgrade(Database db, int oldVersion, int newVersion) async {
