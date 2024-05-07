@@ -1,4 +1,6 @@
+import 'package:despensa/database/notification_dao.dart';
 import 'package:despensa/database/product_dao.dart';
+import 'package:despensa/models/notification.dart' as n;
 import 'package:despensa/util/notification_helper.dart';
 import 'package:flutter/material.dart';
 
@@ -6,6 +8,7 @@ import '../util/formatter.dart';
 import '../models/ean_info.dart';
 import '../models/product.dart';
 import '../util/dialog_manager.dart';
+import 'package:timezone/timezone.dart';
 
 class ExpirationDateScreen extends StatefulWidget {
 
@@ -20,11 +23,12 @@ class ExpirationDateScreen extends StatefulWidget {
 
 class ExpirationDateScreenState extends State<ExpirationDateScreen> {
   
-  ProductDao _dao = ProductDao();
+  ProductDao _productDao = ProductDao();
+  NotificationDao _notificationDao = NotificationDao();
 
   int _loopQuantity;
   EanInfo _product;
-  DateTime _expirationDate;
+  DateTime? _expirationDate;
 
   ExpirationDateScreenState(this._product, this._loopQuantity);
 
@@ -95,7 +99,7 @@ class ExpirationDateScreenState extends State<ExpirationDateScreen> {
                   ),
                   Padding(
                     padding: EdgeInsets.only(top:20.0),
-                    child: FlatButton(
+                    child: TextButton(
                       onPressed: _showDatePicker, 
                       child: _formatDate(this._expirationDate)
                     )
@@ -111,11 +115,11 @@ class ExpirationDateScreenState extends State<ExpirationDateScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  RaisedButton(
+                  TextButton(
                     onPressed: _saveProduct,
                     child: Text('Salvar'),
                   ),
-                  RaisedButton(
+                  TextButton(
                     onPressed: _goBack,
                     child: Text('Cancelar'),
                   )
@@ -157,12 +161,32 @@ class ExpirationDateScreenState extends State<ExpirationDateScreen> {
       this._expirationDate,
       false);
 
-    if (await _dao.insertProduct(product) < 0)
+    var productId = await _productDao.insertProduct(product);
+
+    if (productId <= 0)
     {
       DialogManager.showGenericDialog(context, 'Erro', 'Erro ao salvar produto, tente novamente');
     }
 
-    NotificationHelper.showNotification(product, product.expirationDate);
+    n.Notification notification = n.Notification(Product.withId(productId, null, _expirationDate, false));
+
+    var notificationId = await _notificationDao.insertNotification(notification);
+
+    if (notificationId <= 0)
+    {
+      DialogManager.showGenericDialog(context, 'Erro', 'Erro ao salvar produto, tente novamente');
+    }
+
+    var notificationHelper = NotificationHelper();
+
+    notificationHelper.scheduleNotification(
+      id: notificationId, title: 'Vencimento',
+      body: '''O produto ${product.eanInfo!.description} está próximo do vencimento''',
+      notificationDateTime: TZDateTime.from(_expirationDate!, local),
+      context: context);
+
+    
+
 
     setState(() {
       this._loopQuantity--;
@@ -176,7 +200,7 @@ class ExpirationDateScreenState extends State<ExpirationDateScreen> {
     }
   }
 
-  Text _formatDate(DateTime date) {
+  Text _formatDate(DateTime? date) {
     if (date == null) {
       return Text("Clique para Selecionar",
         style: TextStyle(

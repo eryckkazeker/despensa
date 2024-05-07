@@ -69,8 +69,8 @@ class EanProductScreenState extends State<EanProductScreen> {
                     Padding(
                         padding: EdgeInsets.only(top: 20.0),
                         child: Text('Após aberto, consumir em')),
-                    NumberPicker.integer(
-                        initialValue: _days,
+                    NumberPicker(
+                        value: _days,
                         minValue: 0,
                         maxValue: 180,
                         onChanged: ((newValue) {
@@ -86,11 +86,11 @@ class EanProductScreenState extends State<EanProductScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
-                      RaisedButton(
+                      TextButton(
                         onPressed: (() => _saveProduct(_eanInfo)),
                         child: Text('Salvar'),
                       ),
-                      RaisedButton(
+                      TextButton(
                         onPressed: _goBack,
                         child: Text('Cancelar'),
                       )

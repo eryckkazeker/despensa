@@ -1,8 +1,8 @@
 class EanInfo {
   
-  String _barcode;
-  String _description;
-  int _expirationDays;
+  late String _barcode;
+  late String _description;
+  late int _expirationDays;
 
   EanInfo(this._barcode, this._description, this._expirationDays);
 

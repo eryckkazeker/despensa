@@ -38,7 +38,7 @@ class ProductListItem extends StatelessWidget {
           onTap: () => Navigator.pop(context, this._product),
           child: Card(
           child: ListTile(
-        title: Text(_product.eanInfo.description),
+        title: Text(_product.eanInfo!.description),
         subtitle: Text(formatDateTime(_product.expirationDate)),
       )),
     );

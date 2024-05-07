@@ -9,7 +9,7 @@ class DialogManager {
           title: Text(title),
           content: Text(message),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               onPressed: (() {
                 Navigator.pop(context);
               }), 
