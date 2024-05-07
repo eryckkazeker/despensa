@@ -1,4 +1,3 @@
-import 'package:despensa/util/notification_helper.dart';
 import 'package:flutter/material.dart';
 
 import 'package:despensa/models/scan_mode.dart';
@@ -7,7 +6,6 @@ import '../components/menu_button.dart';
 
 class MainMenu extends StatelessWidget {
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,11 +48,11 @@ class MainMenu extends StatelessWidget {
                         MenuButton('Descartar Produtos',
                             () => _discardProduct(context),
                             textColor: Colors.white),
-                        MenuButton('Calendario', null, textColor: Colors.white),
-                        MenuButton('Lista de Compras', null,
-                            textColor: Colors.white),
-                        MenuButton('Configuracoes', NotificationHelper.showBigTextNotification,
-                            textColor: Colors.white)
+                        // MenuButton('Calendario',null, textColor: Colors.white),
+                        // MenuButton('Lista de Compras', null,
+                        //     textColor: Colors.white),
+                        // MenuButton('Configuracoes', NotificationHelper.showBigTextNotification,
+                        //     textColor: Colors.white)
                       ],
                     ),
                   ),

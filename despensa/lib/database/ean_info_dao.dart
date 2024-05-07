@@ -19,9 +19,9 @@ class EanInfoDao {
     return result;
   }
 
-  Future<EanInfo> getEanInfoByBarcode(String barcode) async {
+  Future<EanInfo?> getEanInfoByBarcode(String barcode) async {
     Database db = await helper.initializeDb();
-    EanInfo info;
+    EanInfo? info;
 
     List<String> columnsToSelect = [colBarcode, colDescription, colExpirationDays];
     String whereString = "$colBarcode = ?";

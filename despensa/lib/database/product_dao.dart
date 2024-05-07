@@ -3,7 +3,6 @@ import 'package:sqflite/sqflite.dart';
 import './dbhelper.dart';
 import './ean_info_dao.dart';
 import '../models/product.dart';
-import '../models/ean_info.dart';
 
 class ProductDao {
 
@@ -27,9 +26,11 @@ class ProductDao {
   Future<int> openProduct(Product product) async {
     Database db = await helper.initializeDb();
 
-    var eanProduct = await _infoDao.getEanInfoByBarcode(product.eanInfo.barcode);
+    var eanProduct = await _infoDao.getEanInfoByBarcode(product.eanInfo!.barcode);
 
-    product.expirationDate = DateTime.now().add(Duration(days: eanProduct.expirationDays));
+    if (eanProduct!.expirationDays > 0) {
+      product.expirationDate = DateTime.now().add(Duration(days: eanProduct.expirationDays));
+    }
     product.isOpen = true;
     
     var result = await db.update(
@@ -44,7 +45,7 @@ class ProductDao {
 
   Future<List<Product>> getOpenProductsByBarcode(String barcode) async {
     Database db = await helper.initializeDb();
-    List<Product> products = List();
+    List<Product> products = List.empty(growable: true);
 
     List<String> columnsToSelect = [colId, colProductBarcode, colExpiration, colIsOpen];
     String whereString = "$colProductBarcode = ? and $colIsOpen = ?";
@@ -66,7 +67,7 @@ class ProductDao {
 
   Future<List<Product>> getClosedProductsByBarcode(String barcode) async {
     Database db = await helper.initializeDb();
-    List<Product> products = List();
+    List<Product> products = List.empty(growable: true);
 
     List<String> columnsToSelect = [colId, colProductBarcode, colExpiration, colIsOpen];
     String whereString = "$colProductBarcode = ? and $colIsOpen = ?";

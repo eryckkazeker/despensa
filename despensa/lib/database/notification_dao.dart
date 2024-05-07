@@ -10,7 +10,8 @@ class NotificationDao {
   static const String colId = 'id';
   static const String colProductId = 'product_id';
 
-  static const String createTable = 'CREATE TABLE $tblNotifications($colId INTEGER PRIMARY KEY, $colProductId INTEGER)';
+  static const String createTable = '''CREATE TABLE $tblNotifications
+                                          ($colId INTEGER PRIMARY KEY, $colProductId INTEGER)''';
 
   DbHelper helper = DbHelper();
 
@@ -38,7 +39,7 @@ class NotificationDao {
   }
 
   Future<List<Notification>> getNotificationsForProduct(Product product) async {
-    List<Notification> notificationList = List();
+    List<Notification> notificationList = List.empty(growable: true);
     var db = await helper.initializeDb();
     var result = await db.query(
       tblNotifications,

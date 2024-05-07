@@ -70,8 +70,8 @@ class ProductEntryScreenState extends State<ProductEntryScreen> {
                     padding: EdgeInsets.only(top:20.0),
                     child: Text('Quantidade:')
                   ),
-                  NumberPicker.integer(
-                    initialValue: _quantity,
+                  NumberPicker(
+                    value: _quantity,
                     minValue: 1,
                     maxValue: 10,
                     onChanged: ((newValue) {
@@ -91,11 +91,11 @@ class ProductEntryScreenState extends State<ProductEntryScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  RaisedButton(
+                  TextButton(
                     onPressed: _continue,
                     child: Text('Continuar'),
                   ),
-                  RaisedButton(
+                  TextButton(
                     onPressed: _goBack,
                     child: Text('Cancelar'),
                   )
