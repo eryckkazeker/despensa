@@ -1,12 +1,12 @@
-import 'package:despensa/util/notification_helper.dart';
+import 'package:despensa/services/notification_service.dart';
 import 'package:flutter/material.dart';
 
-import './screens/main_menu.dart';
+import 'view/main_menu.dart';
 import 'package:timezone/data/latest.dart' as tz;
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  NotificationHelper().initNotification();
+  NotificationService().initNotification();
   tz.initializeTimeZones();
   runApp(DespensaApp());
 } 

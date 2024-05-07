@@ -1,5 +1,8 @@
+import 'package:despensa/controller/expiration_date_screen_controller.dart';
+import 'package:despensa/database/notification_dao.dart';
+import 'package:despensa/database/product_dao.dart';
 import 'package:despensa/models/ean_info.dart';
-import 'package:despensa/screens/expiration_date_screen.dart';
+import 'package:despensa/view/expiration_date_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
 
@@ -115,6 +118,11 @@ class ProductEntryScreenState extends State<ProductEntryScreen> {
 
   void _continue() {
     Navigator.push(context, 
-      MaterialPageRoute(builder: (context) => ExpirationDateScreen(this._eanProduct, this._quantity)));
+      MaterialPageRoute(builder: (context) => ExpirationDateScreen(this._eanProduct,
+                                                                    this._quantity,
+                                                                    ExpirationDateScreenController(
+                                                                      ProductDao(),
+                                                                      NotificationDao()
+                                                                    ))));
   }
 }
