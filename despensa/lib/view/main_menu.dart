@@ -1,7 +1,11 @@
+import 'package:despensa/controller/scanner_screen_controller.dart';
+import 'package:despensa/database/ean_info_dao.dart';
+import 'package:despensa/database/notification_dao.dart';
+import 'package:despensa/database/product_dao.dart';
 import 'package:flutter/material.dart';
 
 import 'package:despensa/models/scan_mode.dart';
-import 'package:despensa/screens/scanner_screen.dart';
+import 'package:despensa/view/scanner_screen.dart';
 import '../components/menu_button.dart';
 
 class MainMenu extends StatelessWidget {
@@ -67,18 +71,33 @@ class MainMenu extends StatelessWidget {
     Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => Scanner(ScanMode.insertProduct)));
+            builder: (context) => Scanner(ScanMode.insertProduct,
+                                          ScannerScreenController(
+                                            EanInfoDao(),
+                                            ProductDao(),
+                                            NotificationDao()
+                                          ))));
   }
 
   void _openProduct(context) {
     Navigator.push(context,
-        MaterialPageRoute(builder: (context) => Scanner(ScanMode.openProduct)));
+        MaterialPageRoute(builder: (context) => Scanner(ScanMode.openProduct,
+                                          ScannerScreenController(
+                                            EanInfoDao(),
+                                            ProductDao(),
+                                            NotificationDao()
+                                          ))));
   }
 
   void _discardProduct(context) {
     Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => Scanner(ScanMode.discardProduct)));
+            builder: (context) => Scanner(ScanMode.discardProduct,
+                                          ScannerScreenController(
+                                            EanInfoDao(),
+                                            ProductDao(),
+                                            NotificationDao()
+                                          ))));
   }
 }

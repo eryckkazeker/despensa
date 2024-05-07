@@ -1,36 +1,32 @@
-import 'package:despensa/database/notification_dao.dart';
-import 'package:despensa/database/product_dao.dart';
-import 'package:despensa/models/notification.dart' as n;
-import 'package:despensa/util/notification_helper.dart';
+import 'package:despensa/controller/expiration_date_screen_controller.dart';
 import 'package:flutter/material.dart';
 
 import '../util/formatter.dart';
 import '../models/ean_info.dart';
-import '../models/product.dart';
-import '../util/dialog_manager.dart';
-import 'package:timezone/timezone.dart';
 
 class ExpirationDateScreen extends StatefulWidget {
 
   final int loopQuantity;
   final EanInfo product;
+  final ExpirationDateScreenController expirationDateScreenController;
 
-  ExpirationDateScreen(this.product, this.loopQuantity);
+  ExpirationDateScreen(this.product, this.loopQuantity, this.expirationDateScreenController);
 
   @override
-  ExpirationDateScreenState createState() => ExpirationDateScreenState(this.product, this.loopQuantity);
+  ExpirationDateScreenState createState() => ExpirationDateScreenState(this.product, 
+                                                                      this.loopQuantity,
+                                                                      this.expirationDateScreenController);
 }
 
 class ExpirationDateScreenState extends State<ExpirationDateScreen> {
-  
-  ProductDao _productDao = ProductDao();
-  NotificationDao _notificationDao = NotificationDao();
 
+  final ExpirationDateScreenController expirationDateScreenController;
+  
   int _loopQuantity;
   EanInfo _product;
   DateTime? _expirationDate;
 
-  ExpirationDateScreenState(this._product, this._loopQuantity);
+  ExpirationDateScreenState(this._product, this._loopQuantity, this.expirationDateScreenController);
 
   int _loopCount = 1;
 
@@ -151,42 +147,7 @@ class ExpirationDateScreenState extends State<ExpirationDateScreen> {
 
   void _saveProduct() async {
 
-    if(_expirationDate == null) {
-      DialogManager.showGenericDialog(context,'Atenção', 'Selecione a data de validade');
-      return;
-    }
-
-    Product product = Product(
-      this._product,
-      this._expirationDate,
-      false);
-
-    var productId = await _productDao.insertProduct(product);
-
-    if (productId <= 0)
-    {
-      DialogManager.showGenericDialog(context, 'Erro', 'Erro ao salvar produto, tente novamente');
-    }
-
-    n.Notification notification = n.Notification(Product.withId(productId, null, _expirationDate, false));
-
-    var notificationId = await _notificationDao.insertNotification(notification);
-
-    if (notificationId <= 0)
-    {
-      DialogManager.showGenericDialog(context, 'Erro', 'Erro ao salvar produto, tente novamente');
-    }
-
-    var notificationHelper = NotificationHelper();
-
-    notificationHelper.scheduleNotification(
-      id: notificationId, title: 'Vencimento',
-      body: '''O produto ${product.eanInfo!.description} está próximo do vencimento''',
-      notificationDateTime: TZDateTime.from(_expirationDate!, local),
-      context: context);
-
-    
-
+    this.expirationDateScreenController.saveProduct(this._product, this._expirationDate, context);
 
     setState(() {
       this._loopQuantity--;
