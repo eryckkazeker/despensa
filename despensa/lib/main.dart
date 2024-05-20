@@ -1,7 +1,10 @@
+import 'package:despensa/database/notification_dao.dart';
+import 'package:despensa/database/product_dao.dart';
 import 'package:despensa/services/notification_service.dart';
+import 'package:despensa/services/product_service.dart';
+import 'package:despensa/view/new_main_menu.dart';
 import 'package:flutter/material.dart';
 
-import 'view/main_menu.dart';
 import 'package:timezone/data/latest.dart' as tz;
 
 void main() {
@@ -25,7 +28,7 @@ class DespensaApp extends StatelessWidget {
           secondary: Colors.brown[600]
         )
       ),
-      home: MainMenu(),
+      home: NewMainMenu (ProductService(ProductDao(), NotificationDao())),
     );
   }
 }

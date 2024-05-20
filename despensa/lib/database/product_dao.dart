@@ -43,6 +43,25 @@ class ProductDao {
     return result;
   }
 
+  Future<List<Product>> getAllProducts() async {
+    Database db = await helper.initializeDb();
+    List<Product> products = List.empty(growable: true);
+
+    List<String> columnsToSelect = [colId, colProductBarcode, colExpiration, colIsOpen];
+
+    var result = await db.query(
+      tblProduct,
+      columns: columnsToSelect,
+      orderBy: colExpiration
+    );
+
+    for(var element in result) {
+      products.add(await buildProduct(element));
+    }
+
+    return products;
+  }
+
   Future<List<Product>> getOpenProductsByBarcode(String barcode) async {
     Database db = await helper.initializeDb();
     List<Product> products = List.empty(growable: true);

@@ -9,13 +9,15 @@ class ExpirationDateScreen extends StatefulWidget {
   final int loopQuantity;
   final EanInfo product;
   final ExpirationDateScreenController expirationDateScreenController;
+  final Function? saveProductCallback;
 
-  ExpirationDateScreen(this.product, this.loopQuantity, this.expirationDateScreenController);
+  ExpirationDateScreen(this.product, this.loopQuantity, this.expirationDateScreenController, {this.saveProductCallback});
 
   @override
   ExpirationDateScreenState createState() => ExpirationDateScreenState(this.product, 
                                                                       this.loopQuantity,
-                                                                      this.expirationDateScreenController);
+                                                                      this.expirationDateScreenController,
+                                                                      saveProductCallback: this.saveProductCallback);
 }
 
 class ExpirationDateScreenState extends State<ExpirationDateScreen> {
@@ -25,8 +27,9 @@ class ExpirationDateScreenState extends State<ExpirationDateScreen> {
   int _loopQuantity;
   EanInfo _product;
   DateTime? _expirationDate;
+  Function? saveProductCallback;
 
-  ExpirationDateScreenState(this._product, this._loopQuantity, this.expirationDateScreenController);
+  ExpirationDateScreenState(this._product, this._loopQuantity, this.expirationDateScreenController, {this.saveProductCallback});
 
   int _loopCount = 1;
 
@@ -81,15 +84,18 @@ class ExpirationDateScreenState extends State<ExpirationDateScreen> {
                     padding: EdgeInsets.only(top:50.0),
                     child: Text('Item $_loopCount',
                       style: TextStyle(
-                        fontSize: 20.0
+                        fontWeight: FontWeight.bold,
+                        fontSize: 24.0
                       ),
                     )
                   ),
                   Padding(
                     padding: EdgeInsets.only(top:50.0),
-                    child: Text('Data de Validade:',
+                    child: Text(
+                      'Data de Validade:',
                       style: TextStyle(
-                        fontSize: 20.0
+                        fontWeight: FontWeight.bold,
+                        fontSize: 24.0
                       ),
                     )
                   ),
@@ -111,11 +117,19 @@ class ExpirationDateScreenState extends State<ExpirationDateScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  TextButton(
+                  ElevatedButton(
+                    style: ButtonStyle(
+                          elevation: MaterialStatePropertyAll<double>(2),
+                          backgroundColor: MaterialStatePropertyAll<Color>(Theme.of(context).colorScheme.secondary)
+                        ),
                     onPressed: _saveProduct,
                     child: Text('Salvar'),
                   ),
-                  TextButton(
+                  ElevatedButton(
+                    style: ButtonStyle(
+                          elevation: MaterialStatePropertyAll<double>(2),
+                          backgroundColor: MaterialStatePropertyAll<Color>(Theme.of(context).colorScheme.secondary)
+                        ),
                     onPressed: _goBack,
                     child: Text('Cancelar'),
                   )
@@ -148,6 +162,10 @@ class ExpirationDateScreenState extends State<ExpirationDateScreen> {
   void _saveProduct() async {
 
     this.expirationDateScreenController.saveProduct(this._product, this._expirationDate, context);
+
+    if (saveProductCallback != null) {
+      saveProductCallback!();
+    }
 
     setState(() {
       this._loopQuantity--;
