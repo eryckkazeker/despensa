@@ -1,14 +1,12 @@
 import 'dart:convert';
 
 import 'package:despensa/database/ean_info_dao.dart';
-import 'package:despensa/database/notification_dao.dart';
 import 'package:despensa/database/product_dao.dart';
 import 'package:despensa/models/ean_info.dart';
 import 'package:despensa/models/product.dart';
 import 'package:despensa/models/scan_mode.dart';
-import 'package:despensa/services/notification_service.dart';
+import 'package:despensa/services/product_service.dart';
 import 'package:despensa/util/dialog_manager.dart';
-import 'package:despensa/util/formatter.dart';
 import 'package:despensa/view/ean_product_screen.dart';
 import 'package:despensa/view/product_entry_screen.dart';
 import 'package:despensa/view/product_list_screen.dart';
@@ -16,11 +14,12 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class ScannerScreenController {
-  final EanInfoDao? _eanInfoDao;
-  final ProductDao? _productDao;
-  final NotificationDao? _notificationDao;
+  final EanInfoDao _eanInfoDao;
+  final ProductDao _productDao;
+  final ProductService _productService;
+  Function? saveProductCallback;
 
-  ScannerScreenController(this._eanInfoDao, this._productDao, this._notificationDao);
+  ScannerScreenController(this._eanInfoDao, this._productDao, this._productService, {this.saveProductCallback});
 
   Future<void> scanBarcode(String barcode, ScanMode scanMode, BuildContext context) {
 
@@ -38,14 +37,14 @@ class ScannerScreenController {
   }
 
   Future<void> insertProduct(String barcode, BuildContext context) async {
-    var info = await _eanInfoDao?.getEanInfoByBarcode(barcode);
+    var info = await _eanInfoDao.getEanInfoByBarcode(barcode);
 
     if(info == null) {
         productNotFoundDialog(barcode, context);
       }
       else {
         Navigator.pop(context);
-        Navigator.push(context, MaterialPageRoute(builder: (context) => ProductEntryScreen(info)));
+        Navigator.push(context, MaterialPageRoute(builder: (context) => ProductEntryScreen(info, saveProductCallback: this.saveProductCallback)));
       }
   }
 
@@ -90,7 +89,8 @@ class ScannerScreenController {
       _insertProductData(barcode, context);
     } else {
       Navigator.pop(context);
-      Navigator.push(context, MaterialPageRoute(builder: (context) => EanProductScreen(product)));
+      Navigator.pop(context);
+      Navigator.push(context, MaterialPageRoute(builder: (context) => EanProductScreen(product, saveProductCallback: this.saveProductCallback)));
     }
   }
 
@@ -118,23 +118,22 @@ class ScannerScreenController {
    void _insertProductData(String barcode, BuildContext context) {
     Navigator.pop(context);
     Navigator.pop(context);
-    Navigator.push(context, MaterialPageRoute(builder: (context) => EanProductScreen(EanInfo(barcode, "", 0))));
+    Navigator.push(context, MaterialPageRoute(builder: (context) => EanProductScreen(EanInfo(barcode, "", 0), saveProductCallback: this.saveProductCallback)));
   }
 
   Future<void> openProduct(String barcode, BuildContext context) async {
-    var result = -1;
-    var products = await _productDao?.getClosedProductsByBarcode(barcode);
+    var products = await _productDao.getClosedProductsByBarcode(barcode);
     
-    if(products?.length == 0)
+    if(products.length == 0)
     {
       await DialogManager.showGenericDialog(context,'Atenção', 'Produto não cadastrado');
       Navigator.pop(context);
       return;
     }
 
-    Product? selectedProduct = products?[0];
+    Product? selectedProduct = products[0];
 
-    if(products != null && products.length > 1)
+    if(products.length > 1)
     {
       selectedProduct  = await Navigator.push(context, MaterialPageRoute(builder: (context) => ProductsListScreen(products)));
       if (selectedProduct == null) {
@@ -143,44 +142,22 @@ class ScannerScreenController {
       }
     }
 
-    result = await _productDao!.openProduct(selectedProduct!);
-
-    if(result < 0)  {
-      DialogManager.showGenericDialog(context, 'Erro', 'Erro ao abrir produto. Tente novamente');
-      return;
-    }
-
-    await DialogManager.showGenericDialog(context, 'Sucesso', '''Produto aberto ${selectedProduct.eanInfo!.description}
-    \nConsumir até ${formatDateTime(selectedProduct.expirationDate)}''');
+    await _productService.openProduct(selectedProduct, context);
 
     Navigator.pop(context);
   }
 
   Future<void> discardProduct(String barcode, BuildContext context) async {
-    var productList = await _productDao?.getOpenProductsByBarcode(barcode);
+    var productList = await _productDao.getOpenProductsByBarcode(barcode);
 
-    if(productList == null || productList.isEmpty) {
+    if(productList.isEmpty) {
       await DialogManager.showGenericDialog(context, 'Erro', 'Esse produto não está aberto ou não foi cadastrado');
       Navigator.pop(context);
       return;
     }
 
     // For now, we'll discard the first item found
-    var notifications = await _notificationDao!.getNotificationsForProduct(productList[0]);
-
-    notifications.forEach((notification) async {
-    await NotificationService().removeScheduledNotification(notification.id);
-      await _notificationDao.deleteNotification(notification);
-    });
-    var result = await _productDao!.deleteProduct(productList[0]);
-
-    if(result < 0) {
-      DialogManager.showGenericDialog(context, 'Erro', 'Erro ao descartar produto');
-      Navigator.pop(context);
-      return;
-    }
-
-    await DialogManager.showGenericDialog(context, 'Sucesso', 'Produto descartado!');
+    _productService.discardProduct(productList[0], context);
     Navigator.pop(context);
   }
 }

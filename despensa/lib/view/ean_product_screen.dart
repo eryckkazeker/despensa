@@ -8,18 +8,20 @@ import '../util/dialog_manager.dart';
 
 class EanProductScreen extends StatefulWidget {
   final EanInfo eanProduct;
+  final Function? saveProductCallback;
 
-  EanProductScreen(this.eanProduct);
+  EanProductScreen(this.eanProduct, {this.saveProductCallback});
 
   @override
-  EanProductScreenState createState() => EanProductScreenState(this.eanProduct);
+  EanProductScreenState createState() => EanProductScreenState(this.eanProduct, saveProductCallback: this.saveProductCallback);
 }
 
 class EanProductScreenState extends State<EanProductScreen> {
-  EanProductScreenState(this._eanInfo);
+  EanProductScreenState(this._eanInfo, {this.saveProductCallback});
 
+  Function? saveProductCallback;
   EanInfo _eanInfo;
-  int _days = 1;
+  int _days = 0;
 
   EanInfoDao _dao = EanInfoDao();
 
@@ -35,8 +37,8 @@ class EanProductScreenState extends State<EanProductScreen> {
         body: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Padding(
+            children: [
+              Container(
                 padding: const EdgeInsets.only(top: 20.0),
                 child: Align(
                     alignment: Alignment.center,
@@ -44,10 +46,11 @@ class EanProductScreenState extends State<EanProductScreen> {
                         style: TextStyle(
                             fontSize: 30.0, fontWeight: FontWeight.bold))),
               ),
-              Padding(
-                  padding: EdgeInsets.only(left: 20.0, right: 20.0),
-                  child: Column(children: <Widget>[
-                    Padding(
+              Container(
+                padding: EdgeInsets.only(left: 20.0, right: 20.0),
+                child: Column(
+                  children: [
+                    Container(
                         padding: EdgeInsets.only(left: 70.0, right: 70.0),
                         child: Image(
                           image: AssetImage('assets/images/barcode.png'),
@@ -62,35 +65,54 @@ class EanProductScreenState extends State<EanProductScreen> {
                               descriptionController.text),
                           decoration: InputDecoration(
                               border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(
-                                      Radius.circular(5.0))),
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(5.0))),
                               hintText: 'Descrição do Produto'),
                         )),
-                    Padding(
-                        padding: EdgeInsets.only(top: 20.0),
-                        child: Text('Após aberto, consumir em')),
-                    NumberPicker(
-                        value: _days,
-                        minValue: 0,
-                        maxValue: 180,
-                        onChanged: ((newValue) {
-                          setState(() {
-                            _days = newValue;
-                            _eanInfo.expirationDays = _days;
-                          });
-                        })),
-                    Text('dias')
-                  ])),
-              Padding(
+                    Container(
+                        child: Row(children: [
+                      Text(
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold
+                        ),
+                        'Após aberto, consumir em'),
+                      NumberPicker(
+                          value: _days,
+                          minValue: 0,
+                          maxValue: 180,
+                          onChanged: ((newValue) {
+                            setState(() {
+                              _days = newValue;
+                              _eanInfo.expirationDays = _days;
+                            });
+                          })),
+                      Text(
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold
+                        ),
+                        'dias')
+                    ])),
+                  ],
+                ),
+              ),
+              Container(
                   padding: EdgeInsets.all(20.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: <Widget>[
-                      TextButton(
+                    children: [
+                      ElevatedButton(
+                        style: ButtonStyle(
+                          elevation: MaterialStatePropertyAll<double>(2),
+                          backgroundColor: MaterialStatePropertyAll<Color>(Theme.of(context).colorScheme.secondary)
+                        ),
                         onPressed: (() => _saveProduct(_eanInfo)),
                         child: Text('Salvar'),
                       ),
-                      TextButton(
+                      ElevatedButton(
+                        style: ButtonStyle(
+                          elevation: MaterialStatePropertyAll<double>(2),
+                          backgroundColor: MaterialStatePropertyAll<Color>(Theme.of(context).colorScheme.secondary)
+                        ),
                         onPressed: _goBack,
                         child: Text('Cancelar'),
                       )
@@ -118,7 +140,7 @@ class EanProductScreenState extends State<EanProductScreen> {
       Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => ProductEntryScreen(eanProduct)));
+              builder: (context) => ProductEntryScreen(eanProduct, saveProductCallback: this.saveProductCallback)));
       return;
     }
 
@@ -130,11 +152,11 @@ class EanProductScreenState extends State<EanProductScreen> {
     }
 
     Navigator.pop(context);
-    Navigator.push(context, MaterialPageRoute(builder: (context) => ProductEntryScreen(_eanInfo)));
-    
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => ProductEntryScreen(_eanInfo, saveProductCallback: this.saveProductCallback,)));
   }
 
   void _showErrorDialog(String message) {
-    DialogManager.showGenericDialog(context,'Erro', message);
+    DialogManager.showGenericDialog(context, 'Erro', message);
   }
 }

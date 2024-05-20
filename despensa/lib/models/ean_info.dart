@@ -36,5 +36,6 @@ class EanInfo {
   EanInfo.fromJSON(Map<String, dynamic> json) {
     this._barcode = json['gtin'].toString();
     this._description = json['description'];
+    this._expirationDays = 0;
   }
 }

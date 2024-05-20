@@ -2,6 +2,7 @@ import 'package:despensa/controller/expiration_date_screen_controller.dart';
 import 'package:despensa/database/notification_dao.dart';
 import 'package:despensa/database/product_dao.dart';
 import 'package:despensa/models/ean_info.dart';
+import 'package:despensa/services/product_service.dart';
 import 'package:despensa/view/expiration_date_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
@@ -9,19 +10,21 @@ import 'package:numberpicker/numberpicker.dart';
 class ProductEntryScreen extends StatefulWidget {
 
   final EanInfo eanProduct;
+  final Function? saveProductCallback;
 
-  ProductEntryScreen(this.eanProduct);
+  ProductEntryScreen(this.eanProduct, {this.saveProductCallback});
 
   @override
-  ProductEntryScreenState createState() => ProductEntryScreenState(this.eanProduct);
+  ProductEntryScreenState createState() => ProductEntryScreenState(this.eanProduct, saveProductCallback: saveProductCallback);
 }
 
 class ProductEntryScreenState extends State<ProductEntryScreen> {
 
   EanInfo _eanProduct;
   int _quantity = 1;
+  Function? saveProductCallback;
 
-  ProductEntryScreenState(this._eanProduct);
+  ProductEntryScreenState(this._eanProduct, {this.saveProductCallback});
 
   @override
   Widget build(BuildContext context) {
@@ -71,9 +74,18 @@ class ProductEntryScreenState extends State<ProductEntryScreen> {
                   ),
                   Padding(
                     padding: EdgeInsets.only(top:20.0),
-                    child: Text('Quantidade:')
+                    child: Text(
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 24.0,
+                      ),
+                      'Quantidade:')
                   ),
                   NumberPicker(
+                    selectedTextStyle: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 32.0
+                    ),
                     value: _quantity,
                     minValue: 1,
                     maxValue: 10,
@@ -94,11 +106,19 @@ class ProductEntryScreenState extends State<ProductEntryScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  TextButton(
+                  ElevatedButton(
+                    style: ButtonStyle(
+                          elevation: MaterialStatePropertyAll<double>(2),
+                          backgroundColor: MaterialStatePropertyAll<Color>(Theme.of(context).colorScheme.secondary)
+                        ),
                     onPressed: _continue,
                     child: Text('Continuar'),
                   ),
-                  TextButton(
+                  ElevatedButton(
+                    style: ButtonStyle(
+                          elevation: MaterialStatePropertyAll<double>(2),
+                          backgroundColor: MaterialStatePropertyAll<Color>(Theme.of(context).colorScheme.secondary)
+                        ),
                     onPressed: _goBack,
                     child: Text('Cancelar'),
                   )
@@ -113,7 +133,6 @@ class ProductEntryScreenState extends State<ProductEntryScreen> {
 
   void _goBack() {
     Navigator.pop(context);
-    Navigator.pop(context);
   }
 
   void _continue() {
@@ -121,8 +140,11 @@ class ProductEntryScreenState extends State<ProductEntryScreen> {
       MaterialPageRoute(builder: (context) => ExpirationDateScreen(this._eanProduct,
                                                                     this._quantity,
                                                                     ExpirationDateScreenController(
-                                                                      ProductDao(),
-                                                                      NotificationDao()
-                                                                    ))));
+                                                                      ProductService(
+                                                                        ProductDao(),
+                                                                        NotificationDao()
+                                                                      )
+                                                                    ),
+                                                                    saveProductCallback: this.saveProductCallback)));
   }
 }
