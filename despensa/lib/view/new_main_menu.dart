@@ -6,6 +6,7 @@ import 'package:despensa/database/product_dao.dart';
 import 'package:despensa/models/product.dart';
 import 'package:despensa/models/scan_mode.dart';
 import 'package:despensa/services/product_service.dart';
+import 'package:despensa/util/dialog_manager.dart';
 import 'package:despensa/view/scanner_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -22,6 +23,7 @@ class _NewMainMenuState extends State<NewMainMenu> {
   List<Product>? _products;
 
   ProductService _productService;
+  bool _isSearchEnabled = false;
 
   _NewMainMenuState(this._productService);
 
@@ -52,45 +54,42 @@ class _NewMainMenuState extends State<NewMainMenu> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Despensa'),
+        actions: [
+          IconButton(
+              onPressed: () {
+                setState(() {
+                  this._isSearchEnabled = true;
+                });
+              },
+              icon: Icon(Icons.search))
+        ],
       ),
       body: Stack(
         children: [
           Column(
             children: [
-              Expanded(
-                  flex: 15,
-                  child: Container(
-                    padding: EdgeInsets.only(right: 20, left: 20, top: 10),
-                    child: Row(
-                      children: [
-                        Expanded(
-                            flex: 8,
-                            child: TextField(
-                              controller: _searchController,
-                              onSubmitted: (value) => filterList(value),
-                              decoration: InputDecoration(
-                                  suffixIcon: IconButton(
-                                      onPressed: () {
-                                        _searchController.clear();
-                                        filterList("");
-                                      },
-                                      icon: Icon(Icons.clear_outlined)),
-                                  border: OutlineInputBorder(),
-                                  labelText: 'Buscar'),
-                            )),
-                        Expanded(
-                            flex: 2,
-                            child: IconButton(
-                                onPressed: () =>
-                                    filterList(_searchController.text),
-                                icon: Icon(Icons.search)))
-                      ],
-                    ),
-                  )),
-              Expanded(
-                flex: 85,
-                child: productList()
-              )
+              if (_isSearchEnabled)
+                Expanded(
+                    flex: 15,
+                    child: Container(
+                        padding: EdgeInsets.only(right: 20, left: 20, top: 10),
+                        child: TextField(
+                          controller: _searchController,
+                          onSubmitted: (value) => filterList(value),
+                          decoration: InputDecoration(
+                              suffixIcon: IconButton(
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    filterList("");
+                                    setState(() {
+                                      this._isSearchEnabled = false;
+                                    });
+                                  },
+                                  icon: Icon(Icons.clear_outlined)),
+                              border: OutlineInputBorder(),
+                              labelText: 'Buscar'),
+                        ))),
+              Expanded(flex: 85, child: productList())
             ],
           ),
           // Overlay button to add products
@@ -112,23 +111,32 @@ class _NewMainMenuState extends State<NewMainMenu> {
   Widget productList() {
     if (this._products == null || this._products!.length == 0) {
       return Center(
-        child: Text('Adicione produtos à sua despensa',
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 16.0
-        ))
-      );
+          child: Container(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Adicione produtos à sua despensa',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0)),
+            ElevatedButton(
+              onPressed: () => _insertProduct(context),
+              child: Text('Adicionar Produtos'),
+              style: ButtonStyle(
+                  backgroundColor: MaterialStatePropertyAll<Color>(
+                      Theme.of(context).colorScheme.secondary)),
+            )
+          ],
+        ),
+      ));
     }
 
     return ListView.builder(
-                  padding: EdgeInsets.only(bottom: 80),
-                  itemCount: this._filteredProducts.length,
-                  itemBuilder: (context, index) {
-                    final item = this._filteredProducts[index];
-                    return ProductListTile(item, _openProduct, _discardProduct);
-                  },
-                );
-      
+      padding: EdgeInsets.only(bottom: 80),
+      itemCount: this._filteredProducts.length,
+      itemBuilder: (context, index) {
+        final item = this._filteredProducts[index];
+        return ProductListTile(item, _openProduct, _discardProduct);
+      },
+    );
   }
 
   void _insertProduct(context) {
@@ -137,11 +145,9 @@ class _NewMainMenuState extends State<NewMainMenu> {
         MaterialPageRoute(
             builder: (context) => Scanner(
                 ScanMode.insertProduct,
-                ScannerScreenController(EanInfoDao(),
-                                        ProductDao(),
-                                        ProductService(ProductDao(),
-                                                      NotificationDao()),
-                                        saveProductCallback: this._loadProducts))));
+                ScannerScreenController(EanInfoDao(), ProductDao(),
+                    ProductService(ProductDao(), NotificationDao()),
+                    saveProductCallback: this._loadProducts))));
   }
 
   void filterList(String value) {
@@ -169,17 +175,27 @@ class _NewMainMenuState extends State<NewMainMenu> {
     });
   }
 
-  void _openProduct(Product p) {
-    this
+  void _openProduct(Product p) async {
+    var confirmation = await DialogManager.showConfirmationDialog(context, 'Atenção', 'Abrir o produto ${p.eanInfo!.description}?');
+
+    if (confirmation != null && confirmation) {
+      this
         ._productService
         .openProduct(p, context)
         .then((value) => _loadProducts());
+    }
+    
   }
 
-  void _discardProduct(Product p) {
-    this
+  void _discardProduct(Product p) async {
+    var confirmation = await DialogManager.showConfirmationDialog(context, 'Atenção', 'Desacartar o produto ${p.eanInfo!.description}?');
+
+    if (confirmation != null && confirmation) {
+      this
         ._productService
         .discardProduct(p, context)
         .then((value) => this._loadProducts());
+    }
+    
   }
 }

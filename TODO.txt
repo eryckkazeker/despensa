@@ -1,5 +1,3 @@
-Selecionar produto numa lista de todos os produtos para abrir.
 Ter mais feedback para o usuario
 Gerar lista de compras
 Coletar preços de produtos
-Criar chave estrangeira na tabela de notificações
